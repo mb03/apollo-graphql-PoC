@@ -6,7 +6,8 @@ import ApolloClient from 'apollo-client';
 import {WebSocketLink} from "apollo-link-ws";
 import {gql} from "apollo-boost";
 import {useLazyQuery} from "@apollo/react-hooks";
-
+// useLazyQuery Demo
+// in this case, since the latency is 1s, if clicked more times, it returns only the first result
 const LazyQueryDemo: React.FC = () => {
     const [loaded, setLoaded] = useState<number[]>([])
     const [clickCount, setClickCount] = useState(0)
@@ -14,15 +15,16 @@ const LazyQueryDemo: React.FC = () => {
         onCompleted: (data: { data: { test: number } }) => setLoaded(loaded.concat([data.data.test])),
         fetchPolicy: 'network-only'
     });
-    useEffect(()=>{
-        getData()
-        getData()
-        getData()
-        getData()
-        getData()
-        getData()
-
-    },[])
+    // multiple calls suffers the same trouble, only one result.
+    // useEffect(()=>{
+    //     getData()
+    //     getData()
+    //     getData()
+    //     getData()
+    //     getData()
+    //     getData()
+    //
+    // },[])
     return (<>
         <h1>useLazyQuery</h1>
         <button onClick={() => {
@@ -34,7 +36,10 @@ const LazyQueryDemo: React.FC = () => {
         {loaded.map(n => <p key={n}>{n}</p>)}
     </>);
 }
-
+// useQuery Demo with skip true
+// fetchMore is unavailable, since the query gets never built
+// only refetch is, but it does not cache, i assume that it rebuilds every time
+// am i missing something? some API or configuration?
 const QueryDemo: React.FC = () => {
     const [loaded, setLoaded] = useState<number[]>([])
     const [clickCount, setClickCount] = useState(0)
@@ -42,10 +47,10 @@ const QueryDemo: React.FC = () => {
     const {fetchMore, refetch} = useQuery(gql(`query { data { test }}`), {
         onCompleted: (data: { data: { test: number } }) => data && setLoaded(loaded.concat([data.data.test])),
         fetchPolicy: 'network-only',
-     //   skip: true
+        skip: true
     });
     const onClick = useCallback(() => {
-        if (true  || fetched) {
+        if (fetched) {
             console.log('fetchMore')
             fetchMore({
                 updateQuery: (data) => {

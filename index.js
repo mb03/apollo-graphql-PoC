@@ -25,6 +25,7 @@ const schema = new GraphQLSchema({
                 }),
                 resolve(_, {}) {
                     let retval=counter++;
+                    // 1s latency
                     return new Promise(res => setTimeout(() => res({test: retval}), 1000))
                 },
             },
