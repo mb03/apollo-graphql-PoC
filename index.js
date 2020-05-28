@@ -16,6 +16,11 @@ const schema = new GraphQLSchema({
         name: 'query',
         fields: {
             data: {
+                args: {
+                    srand: {
+                        type: GraphQLInt
+                    }
+                },
                 name: 'data',
                 type: new GraphQLObjectType({
                     name: 'type',

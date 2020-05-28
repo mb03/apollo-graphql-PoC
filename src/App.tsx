@@ -1,34 +1,27 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useState} from 'react';
+import {gql} from "apollo-boost";
+import {useLazyQuery} from "@apollo/react-hooks";
 import {ApolloProvider, useQuery} from 'react-apollo';
 import {InMemoryCache} from 'apollo-cache-inmemory';
 import {SubscriptionClient} from 'subscriptions-transport-ws';
 import ApolloClient from 'apollo-client';
 import {WebSocketLink} from "apollo-link-ws";
-import {gql} from "apollo-boost";
-import {useLazyQuery} from "@apollo/react-hooks";
 // useLazyQuery Demo
 // in this case, since the latency is 1s, if clicked more times, it returns only the first result
 const LazyQueryDemo: React.FC = () => {
     const [loaded, setLoaded] = useState<number[]>([])
     const [clickCount, setClickCount] = useState(0)
     const [getData] = useLazyQuery(gql(`query { data { test }}`), {
-        onCompleted: (data: { data: { test: number } }) => setLoaded(loaded.concat([data.data.test])),
+        onCompleted: ((data: { data: { test: number } }) => console.log('##', data.data.test) as any || setLoaded(loaded.concat([data.data.test]))),
+        onError: e => console.log('e', e),
         fetchPolicy: 'network-only'
     });
-    // multiple calls suffers the same trouble, only one result.
-    // useEffect(()=>{
-    //     getData()
-    //     getData()
-    //     getData()
-    //     getData()
-    //     getData()
-    //     getData()
-    //
-    // },[])
     return (<>
         <h1>useLazyQuery</h1>
         <button onClick={() => {
-            getData()
+            const srand = Math.random();
+            console.log('asking', srand)
+            getData({variables: {srand}})
             setClickCount(clickCount + 1);
         }}>load
         </button>
@@ -50,6 +43,7 @@ const QueryDemo: React.FC = () => {
         skip: true
     });
     const onClick = useCallback(() => {
+      //  if (false && fetched) {
         if (fetched) {
             console.log('fetchMore')
             fetchMore({
